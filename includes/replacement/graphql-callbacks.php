@@ -50,16 +50,18 @@ function url_replacement( $response ) {
  */
 function url_replace_recursive( &$data ) {
 	foreach ( $data as $key => &$value ) {
+		// Exclude generalSettings from URL replacement.
 		if ( 'generalSettings' === $key ) {
 			continue;
 		}
 
-		if ( ( 'url' === $key || 'href' === $key ) && is_string( $value ) ) {
-			$media_dir = wp_upload_dir();
-			if ( ! str_contains( $value, $media_dir['baseurl'] ) ) {
-				$replacement = faustwp_get_setting( 'frontend_uri', '/' );
-				$value       = str_replace( site_url(), $replacement, $value );
-			}
+		if (
+			( 'url' === $key || 'href' === $key ) &&
+			is_string( $value ) &&
+			! has_file_extension( $value )
+		) {
+			$replacement = faustwp_get_setting( 'frontend_uri', '/' );
+			$value       = str_replace( site_url(), $replacement, $value );
 		} elseif ( ( 'path' === $key && is_multisite() ) && is_string( $value ) ) {
 			$site         = get_site();
 			$subdirectory = untrailingslashit( $site->path );
